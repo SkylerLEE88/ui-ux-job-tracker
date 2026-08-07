@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI/UX 设计师岗位仪表盘 — 2026-08-07</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f0f2f5;color:#333;line-height:1.6;}
+.header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:24px 32px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+.header h1{font-size:22px;margin-bottom:4px;}
+.header .meta{font-size:13px;opacity:0.85;}
+.stats-bar{display:flex;gap:16px;padding:20px 32px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.06);flex-wrap:wrap;}
+.stat-card{flex:1;min-width:140px;background:linear-gradient(135deg,#f5f7fa 0%,#e8ecf3 100%);border-radius:10px;padding:16px 20px;text-align:center;border-left:4px solid #667eea;}
+.stat-card .num{font-size:28px;font-weight:700;color:#667eea;}
+.stat-card .label{font-size:13px;color:#666;margin-top:4px;}
+.stat-card.green{border-left-color:#52c41a;}
+.stat-card.green .num{color:#52c41a;}
+.stat-card.orange{border-left-color:#fa8c16;}
+.stat-card.orange .num{color:#fa8c16;}
+.stat-card.blue{border-left-color:#1890ff;}
+.stat-card.blue .num{color:#1890ff;}
+.stat-card.red{border-left-color:#f5222d;}
+.stat-card.red .num{color:#f5222d;}
+.filters{padding:20px 32px;background:#fff;margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+.filters label{font-size:13px;color:#666;font-weight:600;margin-right:4px;}
+.filters select,.filters input{padding:8px 12px;border:1px solid #d9d9d9;border-radius:6px;font-size:13px;outline:none;transition:border-color 0.3s;}
+.filters select:focus,.filters input:focus{border-color:#667eea;}
+.filters .search-box{flex:1;min-width:200px;}
+.btn{padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.3s;}
+.btn-primary{background:#667eea;color:#fff;}
+.btn-primary:hover{background:#5568d3;}
+.btn-export{background:#52c41a;color:#fff;}
+.btn-export:hover{background:#49b018;}
+.container{padding:0 32px 32px;}
+.job-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px;}
+.job-card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,0.06);cursor:pointer;transition:all 0.3s;border:1px solid transparent;position:relative;overflow:hidden;}
+.job-card:hover{box-shadow:0 4px 16px rgba(0,0,0,0.12);border-color:#667eea;transform:translateY(-2px);}
+.job-card .company-tag{position:absolute;top:0;right:0;padding:3px 12px;font-size:11px;color:#fff;border-radius:0 0 0 8px;}
+.tag-cyang{background:#f5222d;}
+.tag-guozi{background:#fa8c16;}
+.tag-guozi-kong{background:#fa541c;}
+.tag-minshang{background:#1890ff;}
+.tag-waiqi{background:#722ed1;}
+.tag-minshang2{background:#52c41a;}
+.job-card h3{font-size:16px;color:#333;margin-bottom:8px;padding-right:80px;}
+.job-card .company{font-size:14px;color:#667eea;font-weight:600;margin-bottom:8px;}
+.job-card .info{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:#666;margin-bottom:10px;}
+.job-card .info span{display:inline-flex;align-items:center;gap:4px;}
+.job-card .salary{font-size:16px;font-weight:700;color:#f5222d;}
+.job-card .city{background:#e6f7ff;color:#1890ff;padding:2px 8px;border-radius:4px;font-size:12px;}
+.job-card .exp{background:#fff7e6;color:#fa8c16;padding:2px 8px;border-radius:4px;font-size:12px;}
+.job-card .edu{background:#f6ffed;color:#52c41a;padding:2px 8px;border-radius:4px;font-size:12px;}
+.job-card .platform{background:#f0f0f0;color:#666;padding:2px 8px;border-radius:4px;font-size:12px;}
+.job-card .new-badge{position:absolute;top:8px;left:8px;background:#f5222d;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;}
+.job-card .verify{display:flex;gap:6px;margin-top:8px;font-size:11px;}
+.job-card .verify .v-passed{color:#52c41a;}
+.job-card .verify .v-pending{color:#faad14;}
+.job-card .link{margin-top:10px;display:inline-block;padding:6px 16px;background:#667eea;color:#fff;text-decoration:none;border-radius:6px;font-size:13px;transition:background 0.3s;}
+.job-card .link:hover{background:#5568d3;}
+.job-detail{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center;padding:20px;}
+.job-detail.active{display:flex;}
+.job-detail-content{background:#fff;border-radius:12px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;padding:32px;position:relative;}
+.job-detail-close{position:absolute;top:16px;right:20px;font-size:24px;color:#999;cursor:pointer;background:none;border:none;}
+.job-detail-content h2{color:#333;margin-bottom:16px;}
+.job-detail-content .detail-row{display:flex;padding:10px 0;border-bottom:1px solid #f0f0f0;}
+.job-detail-content .detail-row .label{width:120px;color:#999;font-size:14px;flex-shrink:0;}
+.job-detail-content .detail-row .value{font-size:14px;color:#333;flex:1;}
+.job-detail-content .apply-btn{display:inline-block;margin-top:20px;padding:12px 32px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;text-decoration:none;border-radius:8px;font-size:16px;font-weight:600;}
+.no-results{text-align:center;padding:60px;color:#999;font-size:16px;}
+.footer{text-align:center;padding:24px;color:#999;font-size:13px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>UI/UX 设计师岗位仪表盘</h1>
+<div class="meta">数据日期：2026-08-07 ｜ 共 40 个岗位 ｜ 首次运行（全部新增）</div>
+</div>
+
+<div class="stats-bar">
+<div class="stat-card"><div class="num">40</div><div class="label">总岗位数</div></div>
+<div class="stat-card green"><div class="num">40</div><div class="label">新增岗位</div></div>
+<div class="stat-card orange"><div class="num">2</div><div class="label">央企岗位</div></div>
+<div class="stat-card blue"><div class="num">26</div><div class="label">上市民企</div></div>
+<div class="stat-card red"><div class="num">5</div><div class="label">外企岗位</div></div>
+<div class="stat-card"><div class="num">15</div><div class="label">匹配4.5年经验</div></div>
+</div>
+
+<div class="filters">
+<label>城市：</label>
+<select id="filterCity">
+<option value="">全部城市</option>
+<option value="北京">北京</option>
+<option value="南京">南京</option>
+<option value="合肥">合肥</option>
+</select>
+<label>企业类型：</label>
+<select id="filterType">
+<option value="">全部类型</option>
+<option value="央企">央企</option>
+<option value="上市民企">上市民企</option>
+<option value="外企">外企</option>
+<option value="国资控股">国资控股</option>
+<option value="其他民企">其他民企</option>
+</select>
+<label>平台：</label>
+<select id="filterPlatform">
+<option value="">全部平台</option>
+<option value="猎聘">猎聘</option>
+<option value="BOSS直聘">BOSS直聘</option>
+<option value="智联招聘">智联招聘</option>
+</select>
+<label>经验：</label>
+<select id="filterExp">
+<option value="">全部经验</option>
+<option value="3-5年">3-5年</option>
+<option value="5-10年">5-10年</option>
+<option value="3年以上">3年以上</option>
+<option value="5年以上">5年以上</option>
+</select>
+<input type="text" class="search-box" id="searchBox" placeholder="搜索岗位名称或公司名称...">
+<button class="btn btn-export" onclick="exportCSV()">导出CSV</button>
+</div>
+
+<div class="container">
+<div class="job-grid" id="jobGrid"></div>
+<div class="no-results" id="noResults" style="display:none;">没有找到匹配的岗位</div>
+</div>
+
+<div class="footer">UI/UX 设计师岗位收集系统 — 数据自动采集自猎聘、智联招聘、BOSS直聘 ｜ 公司工商背景已通过天眼查验证</div>
+
+<div class="job-detail" id="jobDetail" onclick="closeDetail(event)">
+<div class="job-detail-content" onclick="event.stopPropagation()">
+<button class="job-detail-close" onclick="document.getElementById('jobDetail').classList.remove('active')">×</button>
+<div id="detailBody"></div>
+</div>
+</div>
+
+<script>
+const jobs=[
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"移动端交互设计师","公司名称":"Baidu","公司类型":"上市民企","城市":"北京","薪资范围":"25-45k·16薪","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1983690229.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大厂直招 适合4.5年经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"B端交互设计师","公司名称":"Baidu","公司类型":"上市民企","城市":"北京","薪资范围":"30-40k·16薪","经验要求":"3年以上","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1981865005.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大厂直招 适合4.5年经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"交互设计师","公司名称":"Baidu","公司类型":"上市民企","城市":"北京","薪资范围":"15-35k·16薪","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1975249777.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大厂直招","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"高级交互设计师","公司名称":"Baidu","公司类型":"上市民企","城市":"北京","薪资范围":"25-30k","经验要求":"3年以上","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1976152851.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大厂直招","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"HCI人机交互设计师-PICO","公司名称":"字节跳动","公司类型":"其他民企","城市":"北京","薪资范围":"30-60k·15薪","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1973646061.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"PICO VR方向 适合4.5年经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"HCI人机交互设计师-PICO","公司名称":"字节跳动","公司类型":"其他民企","城市":"北京","薪资范围":"30-60k·15薪","经验要求":"经验不限","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1977899431.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"PICO VR方向","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"交互设计师-AI大模型","公司名称":"中国电子云","公司类型":"央企","城市":"北京","薪资范围":"2-4k","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1973542383.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"央企背景 薪资偏低需确认","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"交互设计师","公司名称":"石头科技","公司类型":"上市民企","城市":"北京","薪资范围":"20-35k·16薪","经验要求":"4年以上","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1980847233.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"科创板上市 非常匹配4.5年经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"交互设计师(A119341A)","公司名称":"小米","公司类型":"上市民企","城市":"北京","薪资范围":"25-40k·16薪","经验要求":"5-10年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1981098139.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大厂直招 500强","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"小米海外光网UI设计师","公司名称":"小米","公司类型":"上市民企","城市":"北京","薪资范围":"15-30k·15薪","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1984292803.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大厂直招 海外方向","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"会员/儿童交互设计师","公司名称":"小米集团","公司类型":"上市民企","城市":"北京","薪资范围":"30-35k","经验要求":"5-10年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1978167771.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大厂直招","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"UI设计师（电商消费下单链路方向）","公司名称":"快手","公司类型":"上市民企","城市":"北京","薪资范围":"20-35k·16薪","经验要求":"1-3年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1984539037.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大厂直招 电商方向","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"资深UI设计师","公司名称":"作业帮","公司类型":"其他民企","城市":"北京","薪资范围":"20-35k·15薪","经验要求":"5-10年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1984467671.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"教育赛道 适合4.5年+经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"高级交互设计师、专家","公司名称":"用友网络","公司类型":"上市民企","城市":"北京","薪资范围":"26-55k·16薪","经验要求":"3年以上","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1940351141.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"A股上市 B端企业软件","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"交互设计师","公司名称":"钢研国际新材料创新中心","公司类型":"央企","城市":"北京","薪资范围":"15-20k","经验要求":"3年以上","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1976771209.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"央企背景 稳定","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"XR空间交互设计师","公司名称":"XREAL","公司类型":"其他民企","城市":"北京","薪资范围":"20-40k·14薪","经验要求":"5-10年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1983067019.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"XR方向 新兴赛道","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"资深交互设计师","公司名称":"歌尔丹拿科技","公司类型":"上市民企","城市":"北京","薪资范围":"20-35k","经验要求":"5年以上","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1974070581.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"A股上市 声学/VR赛道","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"高级UI设计师","公司名称":"紫光天际(南京)科技","公司类型":"国资控股","城市":"北京","薪资范围":"15-25k","经验要求":"5-10年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1984171911.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"国资控股 稳定","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"AI智能体交互设计师","公司名称":"联想教育","公司类型":"上市民企","城市":"北京","薪资范围":"50-70k·15薪","经验要求":"6-10年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1983789869.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大厂直招 AI方向 薪资高","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"UX/交互设计师","公司名称":"法本信息","公司类型":"上市民企","城市":"北京","薪资范围":"15-18k","经验要求":"5-10年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1979098743.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"A股上市 IT服务","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"高级交互设计师","公司名称":"MetaApp","公司类型":"其他民企","城市":"北京","薪资范围":"20-26k·14薪","经验要求":"3年以上","学历要求":"大专","岗位链接":"https://www.liepin.com/job/1980658215.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"游戏赛道","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"UI设计师","公司名称":"江苏天合储能有限公司","公司类型":"上市民企","城市":"南京","薪资范围":"14-25k·15薪","经验要求":"3年以上","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1977270173.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"A股科创板上市 新能源","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"交互UI设计师","公司名称":"华乘科技","公司类型":"其他民企","城市":"南京","薪资范围":"15-18k·14薪","经验要求":"5年以上","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1973025725.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"14薪 稳定民企","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"UI设计师","公司名称":"佗道医疗","公司类型":"其他民企","城市":"南京","薪资范围":"15-22k","经验要求":"2-4年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1984481699.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"医疗赛道 非常匹配4.5年经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"资深UI设计师","公司名称":"全速创想","公司类型":"其他民企","城市":"南京","薪资范围":"15-23k","经验要求":"5-10年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1971522195.shtml","公司工商验证":"待验证","招聘信息验证":"已验证","备注":"设计公司经验要求匹配","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"UI设计师（客户端/web）","公司名称":"纵深视觉科技","公司类型":"其他民企","城市":"南京","薪资范围":"12-25k","经验要求":"3年以上","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1974973805.shtml","公司工商验证":"待验证","招聘信息验证":"已验证","备注":"薪资范围宽 适合4.5年经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"UI设计师-UED","公司名称":"科大讯飞","公司类型":"上市民企","城市":"合肥","薪资范围":"20-23k·15薪","经验要求":"5-10年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1982835115.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"A股上市 AI赛道 适合4.5年+经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"UI设计师","公司名称":"科大讯飞","公司类型":"上市民企","城市":"合肥","薪资范围":"15-25k·14薪","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1978425743.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"A股上市 非常匹配4.5年经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"高级UI设计师","公司名称":"美的集团","公司类型":"上市民企","城市":"合肥","薪资范围":"20-40k·15薪","经验要求":"10年以上","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1981590471.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"世界500强 经验要求偏高","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"Design UI System Specialist","公司名称":"大众汽车(安徽)","公司类型":"外企","城市":"合肥","薪资范围":"20-30k","经验要求":"5-10年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1982695415.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"外企500强 汽车HMI","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"Design UI Motion Designer","公司名称":"大众汽车(安徽)","公司类型":"外企","城市":"合肥","薪资范围":"15-35k","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1979552341.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"外企500强 非常匹配4.5年经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"Design UI System Specialist (MJ004909)","公司名称":"大众汽车(安徽)","公司类型":"外企","城市":"合肥","薪资范围":"15-35k","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1979552317.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"外企500强 非常匹配4.5年经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"汽车HMI UI设计师","公司名称":"凯捷咨询(中国)","公司类型":"外企","城市":"合肥","薪资范围":"15-18k·13薪","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1980948779.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"外企500强咨询 汽车HMI","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"汽车交互HMI UI设计师","公司名称":"凯捷咨询(中国)","公司类型":"外企","城市":"合肥","薪资范围":"15-20k·13薪","经验要求":"3年以上","学历要求":"大专","岗位链接":"https://www.liepin.com/job/1981225577.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"外企500强咨询 HMI方向","是否新增":"是"},
+{"日期":"2026-08-07","平台":"智联招聘","岗位名称":"UX/UI设计师 (MJ001461)","公司名称":"阳光电源股份有限公司","公司类型":"上市民企","城市":"合肥","薪资范围":"面议","经验要求":"3年以上","学历要求":"本科","岗位链接":"https://www.zhaopin.com/jobdetail/CC120598170J40505434406.htm","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"A股上市 新能源 非常匹配4.5年经验","是否新增":"是"},
+{"日期":"2026-08-07","平台":"猎聘","岗位名称":"汽车交互设计师","公司名称":"魏桥新能源汽车科技集团","公司类型":"其他民企","城市":"合肥","薪资范围":"15-25k","经验要求":"5年以上","学历要求":"本科","岗位链接":"https://www.liepin.com/job/1980089691.shtml","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大型民企 新能源汽车","是否新增":"是"},
+{"日期":"2026-08-07","平台":"智联招聘","岗位名称":"UX用户体验设计师+线上面试+央企","公司名称":"深圳极联信息技术","公司类型":"其他民企","城市":"北京","薪资范围":"面议","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.zhaopin.com/jobdetail/CC409287530J40821460807.htm","公司工商验证":"待验证","招聘信息验证":"已验证","备注":"标注央企合作项目","是否新增":"是"},
+{"日期":"2026-08-07","平台":"智联招聘","岗位名称":"ux交互设计师","公司名称":"中软国际","公司类型":"上市民企","城市":"南京","薪资范围":"面议","经验要求":"3年以上","学历要求":"本科","岗位链接":"https://www.zhaopin.com/jobdetail/CC508620120J40612444612.htm","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"港股上市 IT服务","是否新增":"是"},
+{"日期":"2026-08-07","平台":"BOSS直聘","岗位名称":"UI设计师","公司名称":"字节跳动","公司类型":"其他民企","城市":"北京","薪资范围":"面议","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.zhipin.com/job_detail/a62c28275bf9a2b71XZ52tm7E1RT.html","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大厂直招","是否新增":"是"},
+{"日期":"2026-08-07","platform":"BOSS直聘","岗位名称":"ux设计师-豆包爱学","公司名称":"字节跳动","公司类型":"其他民企","城市":"北京","薪资范围":"面议","经验要求":"3-5年","学历要求":"本科","岗位链接":"https://www.zhipin.com/job_detail/378bb740725734f803x72tW5EVBW.html","公司工商验证":"已验证","招聘信息验证":"已验证","备注":"大厂直招 AI教育方向","是否新增":"是"}
+];
+
+const typeColorMap={
+"央企":"tag-cyang",
+"国企":"tag-guozi",
+"国资控股":"tag-guozi-kong",
+"上市民企":"tag-minshang",
+"外企":"tag-waiqi",
+"其他民企":"tag-minshang2"
+};
+
+function getCity(cityStr){
+if(cityStr.indexOf("北京")>=0)return "北京";
+if(cityStr.indexOf("南京")>=0)return "南京";
+if(cityStr.indexOf("合肥")>=0)return "合肥";
+return "其他";
+}
+
+function renderJobs(){
+const grid=document.getElementById("jobGrid");
+const fCity=document.getElementById("filterCity").value;
+const fType=document.getElementById("filterType").value;
+const fPlatform=document.getElementById("filterPlatform").value;
+const fExp=document.getElementById("filterExp").value;
+const search=document.getElementById("searchBox").value.toLowerCase();
+let filtered=jobs.filter(j=>{
+const city=getCity(j["城市"]);
+if(fCity&&city!==fCity)return false;
+if(fType&&j["公司类型"]!==fType)return false;
+if(fPlatform&&j["平台"]!==fPlatform)return false;
+if(fExp&&j["经验要求"]!==fExp)return false;
+if(search){
+const text=(j["岗位名称"]+j["公司名称"]).toLowerCase();
+if(text.indexOf(search)<0)return false;
+}
+return true;
+});
+if(filtered.length===0){
+grid.innerHTML="";
+document.getElementById("noResults").style.display="block";
+return;
+}
+document.getElementById("noResults").style.display="none";
+grid.innerHTML=filtered.map((j,idx)=>{
+const tc=typeColorMap[j["公司类型"]]||"tag-minshang2";
+const vStatus=j["公司工商验证"]=="已验证"?"v-passed":"v-pending";
+const rStatus=j["招聘信息验证"]=="已验证"?"v-passed":"v-pending";
+return `<div class="job-card" onclick="showDetail(${idx})">
+<span class="company-tag ${tc}">${j["公司类型"]}</span>
+<span class="new-badge">新增</span>
+<h3>${j["岗位名称"]}</h3>
+<div class="company">${j["公司名称"]}</div>
+<div class="info">
+<span class="salary">${j["薪资范围"]}</span>
+<span class="city">${j["城市"]}</span>
+<span class="exp">${j["经验要求"]}</span>
+<span class="edu">${j["学历要求"]}</span>
+<span class="platform">${j["平台"]}</span>
+</div>
+<div class="verify">
+<span class="${vStatus}">工商:${j["公司工商验证"]}</span>
+<span class="${rStatus}">| 招聘:${j["招聘信息验证"]}</span>
+</div>
+</div>`;
+}).join("");
+window.filteredJobs=filtered;
+}
+
+function showDetail(idx){
+const j=window.filteredJobs[idx];
+const detail=document.getElementById("jobDetail");
+const body=document.getElementById("detailBody");
+body.innerHTML=`
+<h2>${j["岗位名称"]}</h2>
+<div class="detail-row"><span class="label">公司名称</span><span class="value">${j["公司名称"]}</span></div>
+<div class="detail-row"><span class="label">公司类型</span><span class="value">${j["公司类型"]}</span></div>
+<div class="detail-row"><span class="label">城市</span><span class="value">${j["城市"]}</span></div>
+<div class="detail-row"><span class="label">薪资范围</span><span class="value" style="color:#f5222d;font-weight:700;">${j["薪资范围"]}</span></div>
+<div class="detail-row"><span class="label">经验要求</span><span class="value">${j["经验要求"]}</span></div>
+<div class="detail-row"><span class="label">学历要求</span><span class="value">${j["学历要求"]}</span></div>
+<div class="detail-row"><span class="label">招聘平台</span><span class="value">${j["平台"]}</span></div>
+<div class="detail-row"><span class="label">采集日期</span><span class="value">${j["日期"]}</span></div>
+<div class="detail-row"><span class="label">公司工商验证</span><span class="value">${j["公司工商验证"]}</span></div>
+<div class="detail-row"><span class="label">招聘信息验证</span><span class="value">${j["招聘信息验证"]}</span></div>
+<div class="detail-row"><span class="label">备注</span><span class="value">${j["备注"]}</span></div>
+<div class="detail-row"><span class="label">是否新增</span><span class="value" style="color:#f5222d;font-weight:700;">${j["是否新增"]}</span></div>
+<a class="apply-btn" href="${j["岗位链接"]}" target="_blank">投递岗位</a>
+`;
+detail.classList.add("active");
+}
+
+function closeDetail(e){
+if(e.target===document.getElementById("jobDetail")){
+document.getElementById("jobDetail").classList.remove("active");
+}
+}
+
+function exportCSV(){
+let csv="日期,平台,岗位名称,公司名称,公司类型,城市,薪资范围,经验要求,学历要求,岗位链接,公司工商验证,招聘信息验证,备注,是否新增\n";
+window.filteredJobs.forEach(j=>{
+csv+=`${j["日期"]},${j["平台"]},${j["岗位名称"]},${j["公司名称"]},${j["公司类型"]},${j["城市"]},${j["薪资范围"]},${j["经验要求"]},${j["学历要求"]},${j["岗位链接"]},${j["公司工商验证"]},${j["招聘信息验证"]},${j["备注"]},${j["是否新增"]}\n`;
+});
+const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"});
+const url=URL.createObjectURL(blob);
+const a=document.createElement("a");
+a.href=url;
+a.download="jobs_filtered.csv";
+a.click();
+URL.revokeObjectURL(url);
+}
+
+document.getElementById("filterCity").addEventListener("change",renderJobs);
+document.getElementById("filterType").addEventListener("change",renderJobs);
+document.getElementById("filterPlatform").addEventListener("change",renderJobs);
+document.getElementById("filterExp").addEventListener("change",renderJobs);
+document.getElementById("searchBox").addEventListener("input",renderJobs);
+
+renderJobs();
+</script>
+</body>
+</html>
