@@ -34,6 +34,20 @@ FIELDS = [
 CURATED_ADDITIONS = [
     {
         "平台": "公司官网招聘页",
+        "岗位名称": "UI设计师（J103371）",
+        "公司名称": "百度（Baidu）",
+        "公司类型": "稳定民企（纳斯达克/港股上市、10000人+）",
+        "城市": "北京",
+        "薪资范围": "薪资面议",
+        "经验要求": "1年以上",
+        "学历要求": "本科及以上",
+        "岗位链接": "https://talent.baidu.com/jobs/detail/SOCIAL/8972f75c-6815-4cfe-8793-ad3650c9fac9",
+        "公司工商验证": "百度投资者关系官网确认公司在纳斯达克（BIDU）及香港联交所（9888）上市，总部位于北京；官网披露截至2025年末约有33500名全职员工，符合上市且万人以上稳定民企门槛。",
+        "招聘信息验证": "2026-08-12 百度官方招聘详情页可直接访问（HTTP 200），显示PSIG北京UI设计师岗位、招聘1人、发布日期2026-07-21；职责覆盖百度网盘与文库的AI应用、产品营销、商业付费和互动玩法设计，页面提供登录入口。",
+        "备注": "明示门槛为1年以上，低于候选人的4.5年经验，但复杂链路、体系化UI、商业转化与AIGC工作流具有较高匹配度；建议投递前确认职级和薪资带宽，作品集突出复杂产品链路、增长设计及Figma/AE/AIGC实践。投递需登录百度招聘账号。",
+    },
+    {
+        "平台": "公司官网招聘页",
         "岗位名称": "高级UI设计师（J99117）",
         "公司名称": "百度（Baidu）",
         "公司类型": "稳定民企（纳斯达克/港股上市、10000人+）",
@@ -580,6 +594,12 @@ CURATED_ADDITIONS = [
     },
 ]
 
+DAILY_ADDITION_LINKS = {
+    "2026-08-12": {
+        "https://talent.baidu.com/jobs/detail/SOCIAL/8972f75c-6815-4cfe-8793-ad3650c9fac9",
+    },
+}
+
 INACTIVE_KEYS = {
     (
         "科大讯飞-高级UI设计师（政法业务）",
@@ -681,19 +701,38 @@ def unique_key(row: dict[str, str]) -> tuple[str, str, str, str]:
     )
 
 
+def link_key(row: dict[str, str]) -> str:
+    return row["岗位链接"].strip()
+
+
 def build_rows(run_date: str, target_date: date) -> list[dict[str, str]]:
     verified_rows = load_verified_rows(run_date)
     seed_rows = [refresh_row(row, run_date) for row in load_rows(latest_seed_csv(target_date))]
     # Once a verified pool exists, use it as the canonical source of truth so
     # stale seed-only rows do not persist across daily regenerations.
     base_rows = verified_rows if verified_rows else seed_rows
-    keyed_rows = {unique_key(row): row for row in base_rows}
+    keyed_rows: dict[tuple[str, str, str, str], dict[str, str]] = {}
+    seen_links: set[str] = set()
+    for row in base_rows:
+        link = link_key(row)
+        if link and link in seen_links:
+            continue
+        keyed_rows[unique_key(row)] = row
+        if link:
+            seen_links.add(link)
     for item in CURATED_ADDITIONS:
         row = {field: "" for field in FIELDS}
         row.update(item)
         row["日期"] = run_date
         row["是否新增"] = ""
+        link = link_key(row)
+        if link not in seen_links and link not in DAILY_ADDITION_LINKS.get(run_date, set()):
+            continue
+        if link and link in seen_links and unique_key(row) not in keyed_rows:
+            continue
         keyed_rows[unique_key(row)] = row
+        if link:
+            seen_links.add(link)
     for key in INACTIVE_KEYS:
         keyed_rows.pop(key, None)
     return list(keyed_rows.values())
@@ -703,15 +742,24 @@ def load_previous_keys(path: Path | None) -> set[tuple[str, str, str, str]]:
     return {unique_key(row) for row in load_rows(path)}
 
 
+def load_previous_links(path: Path | None) -> set[str]:
+    return {link_key(row) for row in load_rows(path) if link_key(row)}
+
+
 def normalize_city(value: str) -> str:
     if not value:
         return value
     return value.split("-")[0].split("·")[0].strip()
 
 
-def tag_new(rows: list[dict[str, str]], previous_keys: set[tuple[str, str, str, str]]) -> None:
+def tag_new(
+    rows: list[dict[str, str]],
+    previous_keys: set[tuple[str, str, str, str]],
+    previous_links: set[str],
+) -> None:
     for row in rows:
-        row["是否新增"] = "否" if unique_key(row) in previous_keys else "是"
+        same_link = bool(link_key(row)) and link_key(row) in previous_links
+        row["是否新增"] = "否" if same_link or unique_key(row) in previous_keys else "是"
 
 
 def simplify_company_type(value: str) -> str:
@@ -1052,7 +1100,8 @@ def main() -> None:
     rows = build_rows(run_date, target_date)
     prev_path = previous_daily_csv(target_date)
     previous_keys = load_previous_keys(prev_path)
-    tag_new(rows, previous_keys)
+    previous_links = load_previous_links(prev_path)
+    tag_new(rows, previous_keys, previous_links)
     rows.sort(key=lambda row: (row["是否新增"] != "是", row["城市"], row["平台"], row["公司名称"], row["岗位名称"]))
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
