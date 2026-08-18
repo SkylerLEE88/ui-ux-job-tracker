@@ -948,6 +948,19 @@ INACTIVE_KEYS = {
     ),
 }
 
+INACTIVE_LINKS = {
+    # 2026-08-18 用户在 LinkedIn 登录态确认页面明确显示“已停止接受求职申请”。
+    "https://cn.linkedin.com/jobs/view/ui%E8%AE%BE%E8%AE%A1%E5%B8%88%EF%BC%88%E6%99%BA%E8%83%BD%E5%88%B6%E9%80%A0%E6%96%B9%E5%90%91%EF%BC%89-at-%E4%B8%AD%E6%9C%BA%E7%AC%AC%E4%B8%80%E8%AE%BE%E8%AE%A1%E7%A0%94%E7%A9%B6%E9%99%A2%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8-4420023155",
+}
+
+INACTIVE_STATUS_MARKERS = (
+    "已停止接受求职申请",
+    "职位已失效",
+    "已停止申请",
+    "招聘已结束",
+    "职位已下线",
+)
+
 
 def latest_seed_csv(target_date: date) -> Path | None:
     candidates: list[tuple[date, Path]] = []
@@ -1040,6 +1053,15 @@ def link_key(row: dict[str, str]) -> str:
     return row["岗位链接"].strip()
 
 
+def is_inactive(row: dict[str, str]) -> bool:
+    if link_key(row).rstrip("/") in {link.rstrip("/") for link in INACTIVE_LINKS}:
+        return True
+    evidence = " ".join(
+        (row.get("招聘信息验证", ""), row.get("备注", ""))
+    )
+    return any(marker in evidence for marker in INACTIVE_STATUS_MARKERS)
+
+
 def build_rows(run_date: str, target_date: date) -> list[dict[str, str]]:
     verified_rows = load_verified_rows(run_date)
     seed_rows = [refresh_row(row, run_date) for row in load_rows(latest_seed_csv(target_date))]
@@ -1070,6 +1092,9 @@ def build_rows(run_date: str, target_date: date) -> list[dict[str, str]]:
             seen_links.add(link)
     for key in INACTIVE_KEYS:
         keyed_rows.pop(key, None)
+    keyed_rows = {
+        key: row for key, row in keyed_rows.items() if not is_inactive(row)
+    }
     return list(keyed_rows.values())
 
 
@@ -1394,6 +1419,7 @@ def render_report(rows: list[dict[str, str]], run_date: str, compare_basis: str)
     by_platform = Counter(row["平台"] for row in rows)
     by_company_type = Counter(simplify_company_type(row["公司类型"]) for row in rows)
     new_rows = [row for row in rows if row["是否新增"] == "是"]
+    new_cities = "、".join(sorted({row["城市"] for row in new_rows})) or "无"
     top_new = "\n".join(
         f"- {row['城市']}｜{row['公司名称']}｜{row['岗位名称']}｜{row['平台']}｜{row['岗位链接']}"
         for row in new_rows
@@ -1419,7 +1445,7 @@ def render_report(rows: list[dict[str, str]], run_date: str, compare_basis: str)
 
 ## Executive Summary（执行摘要）
 - **今日共保留 {len(rows)} 条岗位，其中新增 {len(new_rows)} 条。** 新增判断以 `{compare_basis}` 为基准，优先比对岗位链接，并用公司、岗位名称与城市辅助去重。
-- **今日新增来自北京与合肥。** 北京新增为字节跳动官方社招API可检索的AI产品、UI与UX岗位；合肥新增为中机第一设计研究院的智能制造UI岗位。
+- **今日新增覆盖：{new_cities}。** 仅保留详情与在招状态能够公开复核、且满足企业稳定性门槛的岗位。
 - **真实性边界清晰。** 官方招聘API与公司招聘页优先；LinkedIn岗位可公开核验但完整投递需登录，未把搜索摘要、已停止申请页面或不满足企业门槛的岗位列为新增。
 
 ## 今日概览
@@ -1447,6 +1473,7 @@ def render_report(rows: list[dict[str, str]], run_date: str, compare_basis: str)
 - {compare_note[2:]}
 - 字节跳动岗位优先按官方招聘页复核；国聘职位页需要 JavaScript 才能完整渲染，未将仅有搜索摘要、无法打开详情的线索作为今日新增。
 - LinkedIn、猎聘部分岗位可公开查看摘要和部分职责，完整投递或更多详情通常需要登录。
+- LinkedIn 的公开访客页出现“申请”按钮或返回 HTTP 200，不等于岗位仍在招；应以登录后页面是否显示“已停止接受求职申请”为准，发现停止状态即从当日数据清除。
 - BOSS直聘公开网页索引不稳定，未将无法独立核验企业门槛与有效投递入口的搜索摘要写入结果；智联招聘的公开详情页可核验岗位已保留。
 - 51job 今日公开页存在频繁验证与反爬拦截，本次仅保留可公开核验且企业背景明确的职位，未将无法稳定复核的条目写入结果。
 """
