@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 DATA_DIR = ROOT / "data"
 DAILY_DIR = DATA_DIR / "daily"
+REPORTS_DIR = ROOT / "reports"
 VERIFIED_SOURCE_PATH = DATA_DIR / "verified_jobs.json"
 FIELDS = [
     "日期",
@@ -832,7 +833,72 @@ CURATED_ADDITIONS = [
     },
 ]
 
+CURATED_ADDITIONS.extend([
+    {
+        "平台": "公司官网招聘页",
+        "岗位名称": "AI产品设计师-抖音生活服务",
+        "公司名称": "字节跳动",
+        "公司类型": "稳定民企（全球知名科技企业/150000人+）",
+        "城市": "北京",
+        "薪资范围": "薪资面议",
+        "经验要求": "3年以上",
+        "学历要求": "本科及以上",
+        "岗位链接": "https://jobs.bytedance.com/experienced/position/7672649785741838597/detail",
+        "公司工商验证": "字节跳动集团官网披露公司成立于2012年，旗下包括抖音、TikTok、飞书、PICO等产品，并披露全球员工超过150000人、分布于近120个城市，符合万人以上稳定知名民企门槛。",
+        "招聘信息验证": "2026-08-18 字节跳动官方社招API返回北京/上海正式岗位，职位ID 7672649785741838597，发布日期2026-08-11；本表按北京归类，官网详情页携官方站点请求头复核为HTTP 200并可申请。",
+        "备注": "与4.5年经验高度匹配，负责AI驱动设计流程、A2C组件生成和可验证原型；要求理解LLM、Agent、Prompt、Workflow并具备AI Coding、前端或低代码原型能力。",
+    },
+    {
+        "平台": "公司官网招聘页",
+        "岗位名称": "UI设计师 - AI创新业务",
+        "公司名称": "字节跳动",
+        "公司类型": "稳定民企（全球知名科技企业/150000人+）",
+        "城市": "北京",
+        "薪资范围": "薪资面议",
+        "经验要求": "5年以上",
+        "学历要求": "本科及以上",
+        "岗位链接": "https://jobs.bytedance.com/experienced/position/7672392496806906165/detail",
+        "公司工商验证": "字节跳动集团官网披露公司成立于2012年，旗下包括抖音、TikTok、飞书、PICO等产品，并披露全球员工超过150000人、分布于近120个城市，符合万人以上稳定知名民企门槛。",
+        "招聘信息验证": "2026-08-18 字节跳动官方社招API返回该北京正式岗位，职位ID 7672392496806906165，发布日期2026-08-10；官网详情页携官方站点请求头复核为HTTP 200并可申请。",
+        "备注": "比候选人4.5年经验高半年，作为冲刺岗保留；负责AI、手机OS与跨设备产品UI及设计系统，要求成熟C端作品、Design Token/Component/Guideline和工程落地能力。",
+    },
+    {
+        "平台": "公司官网招聘页",
+        "岗位名称": "UX设计师 - AI创新业务",
+        "公司名称": "字节跳动",
+        "公司类型": "稳定民企（全球知名科技企业/150000人+）",
+        "城市": "北京",
+        "薪资范围": "薪资面议",
+        "经验要求": "5年以上",
+        "学历要求": "相关专业背景优先",
+        "岗位链接": "https://jobs.bytedance.com/experienced/position/7672390563581430069/detail",
+        "公司工商验证": "字节跳动集团官网披露公司成立于2012年，旗下包括抖音、TikTok、飞书、PICO等产品，并披露全球员工超过150000人、分布于近120个城市，符合万人以上稳定知名民企门槛。",
+        "招聘信息验证": "2026-08-18 字节跳动官方社招API返回该北京正式岗位，职位ID 7672390563581430069，发布日期2026-08-10；官网详情页携官方站点请求头复核为HTTP 200并可申请。",
+        "备注": "比候选人4.5年经验高半年，作为冲刺岗保留；侧重AI Native、系统级软件、跨设备Ecosystem与0到1原型验证，有OS、多模态、硬件或AI Coding案例者更匹配。",
+    },
+    {
+        "平台": "LinkedIn",
+        "岗位名称": "UI设计师（智能制造方向）",
+        "公司名称": "中机第一设计研究院有限公司",
+        "公司类型": "央企（国有独资/中国机械总院集团）",
+        "城市": "合肥",
+        "薪资范围": "薪资面议",
+        "经验要求": "2年以上",
+        "学历要求": "本科及以上",
+        "岗位链接": "https://cn.linkedin.com/jobs/view/ui%E8%AE%BE%E8%AE%A1%E5%B8%88%EF%BC%88%E6%99%BA%E8%83%BD%E5%88%B6%E9%80%A0%E6%96%B9%E5%90%91%EF%BC%89-at-%E4%B8%AD%E6%9C%BA%E7%AC%AC%E4%B8%80%E8%AE%BE%E8%AE%A1%E7%A0%94%E7%A9%B6%E9%99%A2%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8-4420023155",
+        "公司工商验证": "中机第一设计研究院官网披露公司成立于1952年，隶属中国机械科学研究总院集团，2017年改制为国有独资公司，现有职工800余人；属于中央企业体系，符合稳定性门槛。",
+        "招聘信息验证": "2026-08-18 LinkedIn公开职位页HTTP 200，显示合肥全职UI设计师岗位发布约1个月且仍有‘申请’入口，职位来源于智联招聘；完整投递需登录。",
+        "备注": "与4.5年经验高度匹配，负责智能制造产品UI、全链路落地与设计规范；要求B端成功案例，3D/AIGC及Figma、MasterGo、Pixso为加分项。需登录投递，并确认具体部门、薪资与合同主体。",
+    },
+])
+
 DAILY_ADDITION_LINKS = {
+    "2026-08-18": {
+        "https://jobs.bytedance.com/experienced/position/7672649785741838597/detail",
+        "https://jobs.bytedance.com/experienced/position/7672392496806906165/detail",
+        "https://jobs.bytedance.com/experienced/position/7672390563581430069/detail",
+        "https://cn.linkedin.com/jobs/view/ui%E8%AE%BE%E8%AE%A1%E5%B8%88%EF%BC%88%E6%99%BA%E8%83%BD%E5%88%B6%E9%80%A0%E6%96%B9%E5%90%91%EF%BC%89-at-%E4%B8%AD%E6%9C%BA%E7%AC%AC%E4%B8%80%E8%AE%BE%E8%AE%A1%E7%A0%94%E7%A9%B6%E9%99%A2%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8-4420023155",
+    },
     "2026-08-17": {
         "https://jobs.bytedance.com/experienced/position/7485255084789205255/detail",
         "https://jobs.bytedance.com/experienced/position/7547724032134416648/detail",
@@ -1089,7 +1155,7 @@ def render_dashboard(rows: list[dict[str, str]], run_date: str, compare_basis: s
 * {{ box-sizing: border-box; }}
 body {{
   margin: 0;
-  font-family: "PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;
+  font-family: "Avenir Next","PingFang SC","Microsoft YaHei",sans-serif;
   color: var(--ink);
   background:
     radial-gradient(circle at top left, rgba(15,118,110,.16), transparent 32%),
@@ -1105,7 +1171,14 @@ body {{
   box-shadow: var(--shadow);
 }}
 .hero-top {{ display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }}
-.hero h1 {{ margin: 0 0 10px; font-size: 34px; line-height: 1.1; }}
+.hero h1 {{
+  margin: 0 0 10px;
+  font-family: "Iowan Old Style","Songti SC","STSong",serif;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.1;
+}}
 .hero p {{ margin: 0; max-width: 880px; opacity: .92; line-height: 1.7; }}
 .refresh-btn {{
   flex: 0 0 auto;
@@ -1346,8 +1419,8 @@ def render_report(rows: list[dict[str, str]], run_date: str, compare_basis: str)
 
 ## Executive Summary（执行摘要）
 - **今日共保留 {len(rows)} 条岗位，其中新增 {len(new_rows)} 条。** 新增判断以 `{compare_basis}` 为基准，优先比对岗位链接，并用公司、岗位名称与城市辅助去重。
-- **今日新增集中在北京。** 字节跳动官方社招页提供多条正式UI、UX、交互与视觉岗位；LinkedIn公开页补充了奔驰、美团和Duolingo的可申请岗位。
-- **真实性边界清晰。** 官方招聘API与公司招聘页优先；LinkedIn岗位可公开核验但完整投递需登录，未把搜索摘要、失效页或不满足企业门槛的岗位列为新增。
+- **今日新增来自北京与合肥。** 北京新增为字节跳动官方社招API可检索的AI产品、UI与UX岗位；合肥新增为中机第一设计研究院的智能制造UI岗位。
+- **真实性边界清晰。** 官方招聘API与公司招聘页优先；LinkedIn岗位可公开核验但完整投递需登录，未把搜索摘要、已停止申请页面或不满足企业门槛的岗位列为新增。
 
 ## 今日概览
 - 岗位总数：{len(rows)}
@@ -1399,6 +1472,7 @@ def main() -> None:
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     DAILY_DIR.mkdir(parents=True, exist_ok=True)
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
     csv_path = DATA_DIR / f"jobs_{run_date}.csv"
     daily_path = DAILY_DIR / f"jobs_{run_date}.csv"
@@ -1413,11 +1487,17 @@ def main() -> None:
     report_path.write_text(render_report(rows, run_date, compare_basis), encoding="utf-8")
     html_path.write_text(render_dashboard(rows, run_date, compare_basis), encoding="utf-8")
     json_path.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+    (ROOT / "index.html").write_text(html_path.read_text(encoding="utf-8"), encoding="utf-8")
+    (REPORTS_DIR / f"{run_date}.md").write_text(
+        report_path.read_text(encoding="utf-8"), encoding="utf-8"
+    )
 
     print(f"Wrote {len(rows)} rows to {csv_path}")
     print(f"Wrote backup CSV to {daily_path}")
     print(f"Wrote report to {report_path}")
     print(f"Wrote dashboard to {html_path}")
+    print(f"Wrote GitHub Pages dashboard to {ROOT / 'index.html'}")
+    print(f"Wrote report archive to {REPORTS_DIR / f'{run_date}.md'}")
 
 
 if __name__ == "__main__":
