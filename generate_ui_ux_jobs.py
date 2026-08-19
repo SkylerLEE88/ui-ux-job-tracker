@@ -15,6 +15,75 @@ DATA_DIR = ROOT / "data"
 DAILY_DIR = DATA_DIR / "daily"
 REPORTS_DIR = ROOT / "reports"
 VERIFIED_SOURCE_PATH = DATA_DIR / "verified_jobs.json"
+ANHUI_DESIGN_SCOPE = "anhui-design"
+ANHUI_LOCATION_MARKERS = (
+    "安徽",
+    "合肥",
+    "芜湖",
+    "马鞍山",
+    "铜陵",
+    "蚌埠",
+    "淮南",
+    "淮北",
+    "安庆",
+    "黄山",
+    "滁州",
+    "阜阳",
+    "宿州",
+    "六安",
+    "亳州",
+    "池州",
+    "宣城",
+)
+TARGET_ROLE_MARKERS = (
+    "ui",
+    "ux",
+    "ue",
+    "交互",
+    "用户体验",
+    "产品设计",
+    "体验设计",
+    "服务设计",
+    "设计组长",
+    "设计主管",
+    "设计经理",
+    "设计总监",
+    "设计负责人",
+    "设计lead",
+    "design lead",
+    "design manager",
+    "ued",
+)
+EXCLUDED_TITLE_MARKERS = (
+    "平面设计",
+    "电商美工",
+    "建筑设计",
+    "室内设计",
+    "景观设计",
+    "工业设计",
+    "汽车造型",
+    "服装设计",
+    "包装设计",
+    "机械设计",
+    "ic设计",
+    "芯片设计",
+    "原画",
+    "角色设计",
+    "特效设计",
+    "ui开发",
+)
+OPEN_STATUS_MARKERS = (
+    "在招",
+    "接受申请",
+    "仍有申请",
+    "申请入口",
+    "立即投递",
+    "可投递",
+    "可申请",
+    "报名截止",
+    "申请职位",
+    "仍接受",
+)
 FIELDS = [
     "日期",
     "平台",
@@ -1915,7 +1984,11 @@ def build_rows(run_date: str, target_date: date) -> list[dict[str, str]]:
         keyed_rows[unique_key(row)] = row
         if link:
             seen_links.add(link)
-    for item in CURATED_ADDITIONS:
+    # Curated additions are a legacy fallback. A browser-produced verified pool
+    # is complete and canonical, so mixing date-bound static additions into it
+    # would reintroduce stale or out-of-scope jobs.
+    curated_additions = [] if verified_rows else CURATED_ADDITIONS
+    for item in curated_additions:
         row = {field: "" for field in FIELDS}
         row.update(item)
         row["日期"] = run_date
@@ -1948,6 +2021,54 @@ def normalize_city(value: str) -> str:
     if not value:
         return value
     return value.split("-")[0].split("·")[0].strip()
+
+
+def validate_job_scope(rows: list[dict[str, str]], scope: str) -> None:
+    if not scope:
+        return
+    if scope != ANHUI_DESIGN_SCOPE:
+        raise ValueError(f"unsupported JOB_SCOPE: {scope}")
+    if not VERIFIED_SOURCE_PATH.exists():
+        raise ValueError(
+            f"JOB_SCOPE={scope} requires a complete verified pool at {VERIFIED_SOURCE_PATH}"
+        )
+
+    errors: list[str] = []
+    seen_links: set[str] = set()
+    for index, row in enumerate(rows, start=1):
+        label = f"row {index} {row.get('公司名称', '')}/{row.get('岗位名称', '')}"
+        city = row.get("城市", "")
+        title = row.get("岗位名称", "")
+        searchable = " ".join(
+            (title, row.get("招聘信息验证", ""), row.get("备注", ""))
+        ).casefold()
+        title_folded = title.casefold()
+        evidence = row.get("招聘信息验证", "")
+        link = link_key(row)
+
+        if not any(marker in city for marker in ANHUI_LOCATION_MARKERS):
+            errors.append(f"{label}: non-Anhui city {city!r}")
+        if any(marker.casefold() in title_folded for marker in EXCLUDED_TITLE_MARKERS):
+            errors.append(f"{label}: excluded role direction")
+        elif not any(marker.casefold() in searchable for marker in TARGET_ROLE_MARKERS):
+            errors.append(f"{label}: target role evidence missing")
+        if not link.startswith(("https://", "http://")):
+            errors.append(f"{label}: invalid job URL")
+        elif link.rstrip("/") in seen_links:
+            errors.append(f"{label}: duplicate job URL")
+        else:
+            seen_links.add(link.rstrip("/"))
+        if not re.search(r"\b20\d{2}-\d{2}-\d{2}\b", evidence):
+            errors.append(f"{label}: verification date missing")
+        if not any(marker in evidence for marker in OPEN_STATUS_MARKERS):
+            errors.append(f"{label}: current application-state evidence missing")
+
+    if errors:
+        details = "\n".join(f"- {message}" for message in errors[:20])
+        remainder = len(errors) - 20
+        if remainder > 0:
+            details += f"\n- ... and {remainder} more"
+        raise ValueError(f"Anhui design scope validation failed:\n{details}")
 
 
 def tag_new(
@@ -2328,7 +2449,9 @@ def main() -> None:
     run_date_env = os.environ.get("RUN_DATE")
     target_date = date.fromisoformat(run_date_env) if run_date_env else date.today()
     run_date = target_date.isoformat()
+    job_scope = os.environ.get("JOB_SCOPE", "").strip()
     rows = build_rows(run_date, target_date)
+    validate_job_scope(rows, job_scope)
     prev_path = previous_daily_csv(target_date)
     previous_keys = load_previous_keys(prev_path)
     previous_links = load_previous_links(prev_path)
